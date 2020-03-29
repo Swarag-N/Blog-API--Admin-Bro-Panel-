@@ -1,42 +1,55 @@
 const AdminBro = require('admin-bro'),
-  express=require('express')
-  AdminBroExpressjs = require('admin-bro-expressjs'),
-  AdminBroMongoose = require('admin-bro-mongoose'),
-  Blog=require('../models/blogs')
-  session = require('express-session');
+    express=require('express'),
+    AdminBroExpress = require('admin-bro-expressjs'),
+    AdminBroMongoose = require('admin-bro-mongoose'),
+    Blog=require('../models/blogs'),
+    session = require('express-session');
 
-AdminBro.registerAdapter(AdminBroMongoose)
+AdminBro.registerAdapter(AdminBroMongoose);
 
-const adminRouter = express.Router();
+// const adminRouter = express.Router();
 
 const adminBro = new AdminBro({
-  resources:[Blog],
-  rootPath: '/admin',
+  resources:[{
+      resource: Blog,
+      options:{
+          listProperties:['title','date'],
+          filterProperties:["date","title"],
+          editProperties :["title", "info", "image"]
+      },
+  }],
   softwareBrothers: false,
 	branding:{
     companyName: 'C4P'
     }
   }
-)
+);
 
-const Admin ={
-	email : process.env.EMAIL_OF_ADMIN   || 'example@c4p.com',
-	password : process.env.PASSWORD_OF_ADMIN || 'coding'
-}
+const router = AdminBroExpress.buildRouter(adminBro);
+module.exports = router;
+// const Admin ={
+// 	email : process.env.EMAIL_OF_ADMIN   || 'example@c4p.com',
+// 	password : process.env.PASSWORD_OF_ADMIN || 'coding'
+// };
+//
+//
+// AdminBroExpress.buildAuthenticatedRouter(
+//     adminBro,
+//     {
+//         authenticate:async(email, password)=>{
+//             if (email === Admin.email && password === Admin.password) {
+//                 return Admin
+//             }
+//             return null
+//         },
+//         cookieName: process.env.COOKIE_ADMIN_NAME || 'C-4-P',
+//         cookiePassword: process.env.COOKIE_ADMIN_PASSWORD || 'admin-bro',
+//     },
+//     adminRouter,
+//     {
+//         resave:true,
+//         saveUninitialized: true
+//     }
+//     );
 
-
-AdminBroExpressjs.buildAuthenticatedRouter(adminBro,{
-	authenticate:async(email, password)=>{
-		if (email === Admin.email && password === Admin.password) {
-			return Admin
-		}
-    return null
-  },
-  cookieName: process.env.COOKIE_ADMIN_NAME || 'C-4-P',
-  cookiePassword: process.env.COOKIE_ADMIN_PASSWORD || 'admin-bro',
-  },
-  adminRouter,
-  {resave:false,saveUninitialized: true}
-)
-
-module.exports = adminRouter
+// module.exports = adminRouter;

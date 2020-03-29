@@ -3,59 +3,46 @@ const express 	= require("express"),
 	Blog 		= require("./models/blogs.js"),
 	session = require('express-session'),
 	expressSanitizer = require("express-sanitizer"),
-	adminRouter=require("./router/adminbro")
+	adminRouter=require("./router/adminbro"),
+	indexRouter = require('./router/indexRoutes'),
 	bodyParser=require("body-parser"),
 	apk 		= express();
 
 apk.use(expressSanitizer());
-apk.use(bodyParser.json())
-const MongoDataBase = process.env.MONGO_URl ||"mongodb://localhost:27017/home"
+apk.use(bodyParser.json());
+const MongoDataBase = process.env.MONGO_URl ||"mongodb://localhost:27017/home";
+const connectDb = async ()=>{
+	mongoose.connect(MongoDataBase, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+	}, ()=>{
+		apk.use("/admin",adminRouter);
+		console.warn("db connected");
+	}
+	);
+};
+connectDb();
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 
-apk.use("/admin",adminRouter)
+
+apk.use("/",indexRouter);
 
 apk.use(session({
 	secret: 'keyboard cat',
-	resave: false,
+	name:"C4Projects",
+	resave: true,
 	saveUninitialized: true,
 	cookie: { secure: true }
-}))
+}));
 
-//Routes Config 
-//0. Home
-apk.get("/",(request,respond)=>{
-	respond.send("Goto /blogs");
-});
-
-//1. Get Blogs
-apk.get("/blogs",(request,respond)=>{
-	Blog.find((err,allBlogs)=>{
-		if(err){
-			console.log("There is an error");
-			console.log(err);
-		}else{
-			respond.send(allBlogs)
-		}
-	});
-});
-
-// 4. Show Get
-apk.get("/blogs/:id",(request,respond)=>{
-	Blog.findById(request.params.id,(err,foundBlog)=>{
-		if(err){
-			consloe.log(err);
-		}else{
-			respond.send(foundBlog);
-		}
-	});
-});
 
 const run = async()=>{
-	await mongoose.connect(MongoDataBase, { useNewUrlParser: true});
-	await apk.listen(3000,()=>{console.log("Server Is Running")})
-}
+	// await
+	// await mongoose.connect(MongoDataBase, { useNewUrlParser: true});
+	await apk.listen(3000,()=>{console.log("Server Is Running")});
+};
 
-run()
+run();
