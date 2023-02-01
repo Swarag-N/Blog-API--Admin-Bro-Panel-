@@ -19,6 +19,6 @@
     "express-formidable": "^1.2.0",
     "express-sanitizer": "^1.0.5",
     "express-session": "^1.17.0",
-    "mongoose": "^5.9.7"
+    "mongoose": "^5.13.15"
   }
 }
